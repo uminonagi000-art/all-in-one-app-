@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Studio - Voice & Video</title>
+    <title>AI Video Studio - Multi-Language Voice & Video</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -47,6 +47,18 @@
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-400 mb-2">Enter your prompt (Dialogue / Action details)</label>
             <input type="text" id="promptInput" placeholder="e.g., Character shouting angrily, fighting scene dialogue" class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+        </div>
+
+        <!-- Voiceover Language Selection -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-400 mb-2">Select Voiceover Language</label>
+            <select id="voiceLanguage" class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+                <option value="hi-IN">हिंदी (Hindi)</option>
+                <option value="en-US" selected>English (US)</option>
+                <option value="ja-JP">日本語 (Japanese)</option>
+                <option value="ta-IN">தமிழ் (Tamil)</option>
+                <option value="te-IN">తెలుగు (Telugu)</option>
+            </select>
         </div>
 
         <!-- Voiceover Toggle -->
@@ -96,6 +108,7 @@
             const prompt = document.getElementById('promptInput').value.trim();
             const imageInput = document.getElementById('imageInput');
             const enableVoice = document.getElementById('voiceoverToggle').checked;
+            const selectedLang = document.getElementById('voiceLanguage').value;
 
             if(!prompt) {
                 alert('Please enter a text prompt or dialogue!');
@@ -118,20 +131,23 @@
             else if(style === 'human') styleDisplay.innerText = 'Style: Only Human';
             else styleDisplay.innerText = 'Style: Anime + Human Mix';
 
-            let sampleVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+            // सुरक्षित और पब्लिक वीडियो लिंक
+            let sampleVideoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
             videoPlayer.src = sampleVideoUrl;
             downloadBtn.href = sampleVideoUrl;
             videoPlayer.load();
 
-            // Trigger AI Voiceover if enabled
+            // Multi-Language AI Voiceover Trigger
             if(enableVoice && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Stop any previous speech
+                window.speechSynthesis.cancel(); 
                 const utterance = new SpeechSynthesisUtterance(prompt);
-                utterance.rate = 1.0; // Speed
-                utterance.pitch = 0.9; // Slightly deep/intense tone for action/shouting
+                utterance.lang = selectedLang; // चुनी गई भाषा सेट होगी (जैसे hi-IN, ja-JP, आदि)
+                utterance.rate = 1.0; 
+                utterance.pitch = 0.9; 
                 window.speechSynthesis.speak(utterance);
             }
         }
     </script>
 </body>
-</html>
+    </html>
+            
