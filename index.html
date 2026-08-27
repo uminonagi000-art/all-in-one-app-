@@ -1,175 +1,97 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Universal Movie, Anime & Video Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            900: '#0b0f19',
-                            800: '#131824',
-                            700: '#1e2538'
-                        }
-                    }
+    <title>Universal AI Voiceover & Lip-Sync Studio</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 550px; margin: auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #334155; }
+        h2 { text-align: center; color: #38bdf8; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px; }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #e2e8f0; font-size: 14px; }
+        select, input[type="file"], textarea { width: 100%; padding: 12px; margin-top: 6px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; font-size: 14px; }
+        select:focus, input:focus, textarea:focus { outline: none; border-color: #38bdf8; }
+        textarea { height: 110px; resize: vertical; }
+        button { width: 100%; margin-top: 25px; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0ea5e9; }
+        #loading { text-align: center; margin-top: 15px; color: #fbbf24; font-weight: 500; display: none; }
+        .error-msg { color: #f87171; font-size: 13px; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎬 Voiceover & Lip-Sync Studio</h2>
+    <p class="subtitle">मूवी, एनिमी या के-ड्रामा पर अपनी पसंद का देसी/विदेशी वॉइसओवर और लिप-सिंक बनाएं!</p>
+    
+    <form id="voiceoverForm" action="/process" method="POST" enctype="multipart/form-data">
+        
+        <!-- 1. कैटेगरी सेलेक्शन -->
+        <label>1. क्लिप की कैटेगरी चुनें:</label>
+        <select name="category">
+            <option value="movie">🎬 मूवी क्लिप (Movie Clip)</option>
+            <option value="anime">⛩️ एनिमी क्लिप (Anime Clip)</option>
+            <option value="kdrama">🇰🇷 कोरियन ड्रामा (K-Drama Clip)</option>
+        </select>
+
+        <!-- 2. वीडियो अपलोड (5 मिनट लिमिट) -->
+        <label>2. वीडियो अपलोड करें (मैक्सिमम 5 मिनट):</label>
+        <input type="file" name="video" id="videoInput" accept="video/*" required>
+        <div id="durationError" class="error-msg">माफ कीजिए! वीडियो 5 मिनट से लंबी है। कृपया छोटी क्लिप अपलोड करें।</div>
+
+        <!-- 3. भाषा और टोन -->
+        <label>3. वॉइसओवर की भाषा और टोन चुनें:</label>
+        <select name="language">
+            <option value="bhojpuri">भोजपुरी / बिहारी टोन (Bhojpuri / Bihari)</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="nagpuri">नागपुरी (Nagpuri)</option>
+            <option value="en">इंग्लिश (English)</option>
+            <option value="zh">चीनी (Chinese)</option>
+            <option value="ta">तमिल (Tamil)</option>
+            <option value="te">तेलुगु (Telugu)</option>
+        </select>
+
+        <!-- 4. डायलॉग इनपुट -->
+        <label>4. अपना नया डायलॉग यहाँ लिखें:</label>
+        <textarea name="dialogue" placeholder="यहाँ अपना फनी, सीरियस या देसी डायलॉग टाइप करें..." required></textarea>
+
+        <button type="submit" id="submitBtn">वॉइसओवर और लिप-सिंक शुरू करें</button>
+        <div id="loading">प्रोसेसिंग हो रही है... वीडियो और ऑडियो मैच किए जा रहे हैं, कृपया प्रतीक्षा करें।</div>
+    </form>
+</div>
+
+<script>
+    const MAX_DURATION = 300; // 300 सेकंड = 5 मिनट
+
+    document.getElementById('voiceoverForm').onsubmit = function(event) {
+        const videoInput = document.getElementById('videoInput');
+        const file = videoInput.files[0];
+        const errorDiv = document.getElementById('durationError');
+
+        if (file) {
+            // हम फॉर्म सबमिट होने से पहले वीडियो की लंबाई चेक करेंगे
+            event.preventDefault(); 
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+
+            video.onloadedmetadata = function() {
+                window.URL.revokeObjectURL(video.src);
+                if (video.duration > MAX_DURATION) {
+                    errorDiv.style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                } else {
+                    errorDiv.style.display = 'none';
+                    document.getElementById('loading').style.display = 'block';
+                    document.getElementById('submitBtn').disabled = true;
+                    // सब कुछ सही होने पर फॉर्म को आगे सबमिट कर देंगे
+                    document.getElementById('voiceoverForm').submit();
                 }
             }
+            video.src = URL.createObjectURL(file);
         }
-    </script>
-</head>
-<body class="bg-dark-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+    };
+</script>
 
-    <div class="w-full max-w-xl bg-dark-800 border border-dark-700 rounded-2xl p-6 shadow-2xl">
-        <h1 class="text-2xl font-bold mb-4 text-center bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">AI Universal Video Studio</h1>
-        
-        <!-- Scene Category Selection -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-400 mb-2">Select Scene Category (Anime, Movies & Drama)</label>
-            <select id="videoStyle" class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
-                <option value="anime_demon">🔥 Anime: Demon & Action Fight Scenes</option>
-                <option value="police_crime">🚨 Real Human: Police vs Thief / Crime Action</option>
-                <option value="labor_adventure">⛏️ Human Hardwork: Mountain Digging & Survival</option>
-                <option value="movie_drama">🎬 World Movies & Drama Cinematic Scene</option>
-                <option value="mix">✨ Custom Mix & Special Effects</option>
-            </select>
-        </div>
-
-        <!-- Image Upload Section -->
-        <div id="imageUploadContainer" class="mb-4 hidden">
-            <label class="block text-sm font-medium text-gray-400 mb-2">Upload Reference Character Image</label>
-            <input type="file" id="imageInput" accept="image/*" class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-2.5 text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-white hover:file:bg-cyan-400">
-        </div>
-
-        <!-- Prompt Input -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-400 mb-2">Enter Scene Description / Dialogue Prompt</label>
-            <textarea id="promptInput" rows="3" placeholder="e.g., Police chasing thief, demon boss battle dialogue..." class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"></textarea>
-        </div>
-
-        <!-- Voiceover Language Selection -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-400 mb-2">Select Language (Hindi, Japanese, English, Tamil, Telugu)</label>
-            <select id="voiceLanguage" class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
-                <option value="hi-IN">हिंदी (Hindi)</option>
-                <option value="en-US" selected>English (US)</option>
-                <option value="ja-JP">日本語 (Japanese)</option>
-                <option value="ta-IN">தமிழ் (Tamil)</option>
-                <option value="te-IN">తెలుగు (Telugu)</option>
-            </select>
-        </div>
-
-        <!-- Voiceover Toggle -->
-        <div class="mb-5 flex items-center gap-3 bg-dark-900 border border-dark-700 p-3.5 rounded-xl">
-            <input type="checkbox" id="voiceoverToggle" checked class="w-5 h-5 accent-cyan-500 rounded cursor-pointer">
-            <label for="voiceoverToggle" class="text-sm font-medium text-gray-300 cursor-pointer">Enable Character AI Voice Dialogue</label>
-        </div>
-
-        <!-- Generate Button -->
-        <button onclick="generateContent()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-3 rounded-xl transition duration-200 shadow-lg mb-6">
-            Load & Play Scene Video
-        </button>
-
-        <!-- Video Result Section -->
-        <div id="resultSection" class="hidden border border-dark-700 bg-dark-900 rounded-xl p-4">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-medium text-emerald-400 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> Scene Loaded Successfully
-                </span>
-                <span id="styleDisplay" class="text-xs bg-dark-700 px-2.5 py-1 rounded-md text-cyan-400"></span>
-            </div>
-
-            <!-- Dynamic Prompt Display -->
-            <p id="outputPromptText" class="text-xs text-gray-400 mb-3 italic bg-dark-800 p-2 rounded border border-dark-700"></p>
-
-            <video id="videoPlayer" controls autoplay playsinline class="w-full rounded-lg mb-4 bg-black aspect-video object-cover">
-                Your browser does not support the video tag.
-            </video>
-
-            <a id="downloadBtn" href="#" download="ai-scene-video.mp4" class="block text-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 text-white font-medium py-2.5 rounded-lg transition">
-                Download Scene Video
-            </a>
-        </div>
-    </div>
-
-    <script>
-        const styleSelect = document.getElementById('videoStyle');
-        const imageUploadContainer = document.getElementById('imageUploadContainer');
-
-        styleSelect.addEventListener('change', function() {
-            if(this.value === 'mix') {
-                imageUploadContainer.classList.remove('hidden');
-            } else {
-                imageUploadContainer.classList.add('hidden');
-            }
-        });
-
-        function generateContent() {
-            const style = styleSelect.value;
-            const prompt = document.getElementById('promptInput').value.trim();
-            const imageInput = document.getElementById('imageInput');
-            const enableVoice = document.getElementById('voiceoverToggle').checked;
-            const selectedLang = document.getElementById('voiceLanguage').value;
-
-            if(!prompt) {
-                alert('Please enter your scene prompt or character dialogue!');
-                return;
-            }
-
-            if(style === 'mix' && imageInput.files.length === 0) {
-                alert('Please upload a character image for Mix mode!');
-                return;
-            }
-
-            const resultSection = document.getElementById('resultSection');
-            const videoPlayer = document.getElementById('videoPlayer');
-            const styleDisplay = document.getElementById('styleDisplay');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const outputPromptText = document.getElementById('outputPromptText');
-
-            resultSection.classList.remove('hidden');
-            outputPromptText.innerText = `Scene Prompt: "${prompt}"`;
-            
-            let selectedVideoUrl = '';
-
-            // 100% वर्किंग और स्टेबल वीडियो लिंक्स (जो कभी फेल नहीं होंगे)
-            if(style === 'anime_demon') {
-                styleDisplay.innerText = 'Category: Anime & Demon Action';
-                selectedVideoUrl = 'https://media.w3.org/2010/05/sintel/trailer.mp4';
-            } else if(style === 'police_crime') {
-                styleDisplay.innerText = 'Category: Police & Crime Chase';
-                selectedVideoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
-            } else if(style === 'labor_adventure') {
-                styleDisplay.innerText = 'Category: Hardwork & Mountain Scene';
-                selectedVideoUrl = 'https://media.w3.org/2010/05/bunny/trailer.mp4';
-            } else if(style === 'movie_drama') {
-                styleDisplay.innerText = 'Category: Cinematic Movie Drama';
-                selectedVideoUrl = 'https://media.w3.org/2010/05/sintel/trailer.mp4';
-            } else {
-                styleDisplay.innerText = 'Category: Custom Mix & Upload';
-                selectedVideoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
-            }
-
-            videoPlayer.src = selectedVideoUrl;
-            downloadBtn.href = selectedVideoUrl;
-            videoPlayer.load();
-            videoPlayer.play().catch(e => console.log("Auto-play restricted by browser"));
-
-            // Multi-Language AI Voice Dialogue Player
-            if(enableVoice && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-                const utterance = new SpeechSynthesisUtterance(prompt);
-                utterance.lang = selectedLang; 
-                utterance.rate = 1.0; 
-                utterance.pitch = 0.85; 
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-    </script>
 </body>
-    </html>
-                
+</html>
