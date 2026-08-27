@@ -70,7 +70,6 @@
         const errorDiv = document.getElementById('durationError');
 
         if (file) {
-            // हम फॉर्म सबमिट होने से पहले वीडियो की लंबाई चेक करेंगे
             event.preventDefault(); 
             const video = document.createElement('video');
             video.preload = 'metadata';
@@ -84,7 +83,6 @@
                     errorDiv.style.display = 'none';
                     document.getElementById('loading').style.display = 'block';
                     document.getElementById('submitBtn').disabled = true;
-                    // सब कुछ सही होने पर फॉर्म को आगे सबमिट कर देंगे
                     document.getElementById('voiceoverForm').submit();
                 }
             }
