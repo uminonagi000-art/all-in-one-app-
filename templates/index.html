@@ -1,114 +1,218 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Voice & Video Studio</title>
+    <title>AI Voice & Lip-Sync Studio</title>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --accent: #22c55e;
-            --danger: #ef4444;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background-color: var(--card-bg); width: 100%; max-width: 550px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); max-height: 95vh; overflow-y: auto; }
-        
-        /* लॉगिन स्क्रीन के लिए स्टाइल्स */
-        .login-box { text-align: center; padding: 20px 0; }
-        .google-btn { background: #fff; color: #333; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; width: 100%; margin-top: 20px; box-sizing: border-box; }
-        .google-btn:hover { background: #f1f5f9; }
 
-        /* डैशबोर्ड के लिए स्टाइल्स */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
-        .user-info { font-size: 0.85rem; color: var(--text-muted); }
-        .logout-btn { background-color: var(--danger); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            padding: 35px 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 13px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+
+        .btn-google { background: #ffffff; color: #1e293b; }
+        .btn-facebook { background: #1877f2; color: white; }
         
-        h1 { font-size: 1.3rem; margin-bottom: 5px; color: #fff; }
-        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #cbd5e1; }
-        textarea, input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background-color: #0f172a; color: white; font-size: 0.9rem; }
-        textarea { resize: vertical; height: 70px; }
-        button { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        button:hover { background-color: var(--primary-dark); }
-        
-        .result-box { margin-top: 20px; padding: 12px; background-color: #0f172a; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
-        .download-btn { display: inline-block; background-color: var(--accent); color: #0f172a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin-top: 8px; }
-        
-        .history-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
-        .history-section h3 { font-size: 1rem; margin-bottom: 12px; color: #38bdf8; }
-        .history-item { background-color: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--primary); }
-        .history-info { font-size: 0.8rem; max-width: 65%; }
-        .file-name { font-weight: bold; color: #fff; word-break: break-all; }
-        .file-time { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; }
+        .input-box, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0 16px 0;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-box:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 4px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+            color: #0f172a;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .btn-email-submit {
+            background: rgba(51, 65, 85, 0.8);
+            color: white;
+        }
+
+        .divider {
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 35%;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .section { display: none; }
     </style>
+    <script>
+        function showStudio() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('studio-section').style.display = 'block';
+        }
+    </script>
 </head>
 <body>
+    <div class="card">
+        <!-- Login Section -->
+        <div id="login-section">
+            <h2>🎙️ AI Voice Studio</h2>
+            <p class="subtitle">Sign in to continue to your workspace</p>
+            
+            <button onclick="showStudio()" class="btn btn-google">
+                <span style="margin-right: 8px;">🌐</span> Sign in with Google
+            </button>
+            <button onclick="showStudio()" class="btn btn-facebook">
+                <span style="margin-right: 8px;">📘</span> Sign in with Facebook
+            </button>
 
-    <div class="container">
-        {% if not user %}
-            <!-- अगर यूजर लॉग इन नहीं है -->
-            <div class="login-box">
-                <h1>🎙️ AI Voice Studio</h1>
-                <p class="subtitle" style="margin-top: 8px;">जारी रखने के लिए अपने जीमेल से साइन इन करें</p>
-                <a href="/login" class="google-btn">🌐 Google से साइन इन करें</a>
-            </div>
-        {% else %}
-            <!-- अगर यूजर लॉग इन है (डैशबोर्ड) -->
-            <div class="header">
-                <div>
-                    <p class="user-info">👤 {{ user.email }}</p>
-                </div>
-                <a href="/logout" class="logout-btn">लॉग आउट</a>
-            </div>
+            <div class="divider">OR</div>
 
-            <h1>🎙️ AI Voice & Video Studio</h1>
-            <p class="subtitle">टेक्स्ट दें, वीडियो अपलोड करें और क्रोम से डाउनलोड करें</p>
-
-            <form action="/upload" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="text_input">वॉयसओवर टेक्स्ट:</label>
-                    <textarea id="text_input" name="text_input" placeholder="यहाँ अपना टेक्स्ट लिखें..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="media_file">वीडियो या ऑडियो क्लिप चुनें:</label>
-                    <input type="file" id="media_file" name="media_file" accept="video/*,audio/*">
-                </div>
-
-                <button type="submit">प्रोसेस करें और अपलोड करें</button>
+            <form onsubmit="event.preventDefault(); showStudio();">
+                <input type="email" placeholder="Enter your email" class="input-box" required>
+                <input type="password" placeholder="Enter your password" class="input-box" required>
+                <button type="submit" class="btn btn-email-submit">Sign in with Email</button>
             </form>
+        </div>
 
-            {% if success and filename %}
-            <div class="result-box">
-                <p style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">✨ वीडियो और वॉयसओवर तैयार हो गया है!</p>
-                <a href="{{ url_for('download_file', filename=filename) }}" class="download-btn">📥 क्रोम से डाउनलोड करें</a>
-            </div>
-            {% endif %}
+        <!-- Studio Section (Visible after login) -->
+        <div id="studio-section" class="section">
+            <h2>🎙️ Voice & Lip-Sync</h2>
+            <p class="subtitle">Configure your multilingual project</p>
+            
+            <form action="/dashboard" method="POST" enctype="multipart/form-data">
+                <label>1. Select Category</label>
+                <select name="category">
+                    <option value="movie">🎬 Movie Clip</option>
+                    <option value="anime">⛩️ Anime Clip</option>
+                    <option value="kdrama">🇰🇷 K-Drama Clip</option>
+                </select>
 
-            {% if history %}
-            <div class="history-section">
-                <h3>📜 आपकी अपलोड हिस्ट्री</h3>
-                {% for item in history %}
-                <div class="history-item">
-                    <div class="history-info">
-                        <div class="file-name">📁 {{ item.filename }}</div>
-                        <div class="file-time">🕒 {{ item.time }}</div>
-                    </div>
-                    <a href="{{ url_for('download_file', filename=item.filename) }}" class="download-btn" style="margin-top:0; padding:5px 10px; font-size:0.75rem;">📥 डाउनलोड</a>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        {% endif %}
+                <label>2. Upload Video</label>
+                <input type="file" name="video" class="input-box" accept="video/*" required>
+
+                <label>3. Select Language & Tone</label>
+                <select name="language">
+                    <option value="hi">🇮🇳 Hindi</option>
+                    <option value="bn">🇧🇩 Bengali</option>
+                    <option value="bhojpur">🌾 Bhojpuri</option>
+                    <option value="nagpuri">🥁 Nagpuri</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="zh">🇨🇳 Chinese</option>
+                    <option value="ta">🇮🇳 Tamil</option>
+                    <option value="te">🇮🇳 Telugu</option>
+                </select>
+
+                <label>4. Enter Your New Dialogue</label>
+                <textarea name="dialogue" rows="3" class="input-box" placeholder="Type your customized dialogue here..." required></textarea>
+
+                <button type="submit" class="btn btn-submit">Start Voiceover & Lip-Sync</button>
+            </form>
+        </div>
     </div>
-
 </body>
-</html>
+                </html>
+                
