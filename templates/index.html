@@ -1,11 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>My AI App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice & Video Studio</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22c55e;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background-color: var(--card-bg); width: 100%; max-width: 550px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); max-height: 95vh; overflow-y: auto; }
+        
+        /* लॉगिन स्क्रीन के लिए स्टाइल्स */
+        .login-box { text-align: center; padding: 20px 0; }
+        .google-btn { background: #fff; color: #333; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; width: 100%; margin-top: 20px; box-sizing: border-box; }
+        .google-btn:hover { background: #f1f5f9; }
+
+        /* डैशबोर्ड के लिए स्टाइल्स */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        .user-info { font-size: 0.85rem; color: var(--text-muted); }
+        .logout-btn { background-color: var(--danger); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; }
+        
+        h1 { font-size: 1.3rem; margin-bottom: 5px; color: #fff; }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #cbd5e1; }
+        textarea, input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background-color: #0f172a; color: white; font-size: 0.9rem; }
+        textarea { resize: vertical; height: 70px; }
+        button { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
+        button:hover { background-color: var(--primary-dark); }
+        
+        .result-box { margin-top: 20px; padding: 12px; background-color: #0f172a; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
+        .download-btn { display: inline-block; background-color: var(--accent); color: #0f172a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin-top: 8px; }
+        
+        .history-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
+        .history-section h3 { font-size: 1rem; margin-bottom: 12px; color: #38bdf8; }
+        .history-item { background-color: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--primary); }
+        .history-info { font-size: 0.8rem; max-width: 65%; }
+        .file-name { font-weight: bold; color: #fff; word-break: break-all; }
+        .file-time { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to my AI Voice Over App!</h1>
+
+    <div class="container">
+        {% if not user %}
+            <!-- अगर यूजर लॉग इन नहीं है -->
+            <div class="login-box">
+                <h1>🎙️ AI Voice Studio</h1>
+                <p class="subtitle" style="margin-top: 8px;">जारी रखने के लिए अपने जीमेल से साइन इन करें</p>
+                <a href="/login" class="google-btn">🌐 Google से साइन इन करें</a>
+            </div>
+        {% else %}
+            <!-- अगर यूजर लॉग इन है (डैशबोर्ड) -->
+            <div class="header">
+                <div>
+                    <p class="user-info">👤 {{ user.email }}</p>
+                </div>
+                <a href="/logout" class="logout-btn">लॉग आउट</a>
+            </div>
+
+            <h1>🎙️ AI Voice & Video Studio</h1>
+            <p class="subtitle">टेक्स्ट दें, वीडियो अपलोड करें और क्रोम से डाउनलोड करें</p>
+
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="text_input">वॉयसओवर टेक्स्ट:</label>
+                    <textarea id="text_input" name="text_input" placeholder="यहाँ अपना टेक्स्ट लिखें..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="media_file">वीडियो या ऑडियो क्लिप चुनें:</label>
+                    <input type="file" id="media_file" name="media_file" accept="video/*,audio/*">
+                </div>
+
+                <button type="submit">प्रोसेस करें और अपलोड करें</button>
+            </form>
+
+            {% if success and filename %}
+            <div class="result-box">
+                <p style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">✨ वीडियो और वॉयसओवर तैयार हो गया है!</p>
+                <a href="{{ url_for('download_file', filename=filename) }}" class="download-btn">📥 क्रोम से डाउनलोड करें</a>
+            </div>
+            {% endif %}
+
+            {% if history %}
+            <div class="history-section">
+                <h3>📜 आपकी अपलोड हिस्ट्री</h3>
+                {% for item in history %}
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="file-name">📁 {{ item.filename }}</div>
+                        <div class="file-time">🕒 {{ item.time }}</div>
+                    </div>
+                    <a href="{{ url_for('download_file', filename=item.filename) }}" class="download-btn" style="margin-top:0; padding:5px 10px; font-size:0.75rem;">📥 डाउनलोड</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
 </body>
 </html>
-
