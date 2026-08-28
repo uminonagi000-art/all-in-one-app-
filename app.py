@@ -1,46 +1,94 @@
-from flask import Flask, render_template, request
 import os
+from datetime import datetime
+from flask import Flask, render_template, request, send_from_directory, redirect, url_for, session
+from werkzeug.utils import secure_filename
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
 
-# अपलोड की गई फाइलों को सेव करने के लिए फोल्डर
 UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'mp3', 'wav', 'txt'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Google OAuth Setup (अपनी Google Client ID और Secret यहाँ डालें)
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id='YOUR_GOOGLE_CLIENT_ID',
+    client_secret='YOUR_GOOGLE_CLIENT_SECRET',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
+
+user_histories = {}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    user = session.get('user')
+    if not user:
+        return render_template('index.html', user=None)
+    
+    email = user.get('email')
+    history = user_histories.get(email, [])
+    return render_template('index.html', user=user, history=history, success=False)
 
-@app.route('/process', methods=['POST'])
-def process():
-    if 'video' not in request.files:
-        return "कोई वीडियो अपलोड नहीं हुई है!", 400
+@app.route('/upload', methods=['POST'])
+def upload():
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('index'))
     
-    video_file = request.files['video']
-    category = request.form.get('category')
-    language = request.form.get('language')
-    dialogue = request.form.get('dialogue')
+    email = user.get('email')
+    if email not in user_histories:
+        user_histories[email] = []
+
+    text_input = request.form.get('text_input', '')
+    filename = None
     
-    if video_file.filename == '':
-        return "फाइल का नाम खाली है", 400
+    if 'media_file' in request.files:
+        file = request.files['media_file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            
+            upload_time = datetime.now().strftime('%Y-%m-%d %I:%M %p')
+            user_histories[email].insert(0, {
+                'filename': filename,
+                'time': upload_time,
+                'text': text_input if text_input else 'कोई टेक्स्ट नहीं'
+            })
     
-    # वीडियो को सर्वर के 'uploads' फोल्डर में सेव करें
-    video_path = os.path.join(app.config['UPLOAD_FOLDER'], video_file.filename)
-    video_file.save(video_path)
-    
-    return f"""
-    <div style="font-family: Arial; text-align: center; margin-top: 50px; background: #0f172a; color: #fff; padding: 40px; border-radius: 10px; max-width: 500px; margin-left: auto; margin-right: auto;">
-        <h2 style="color: #38bdf8;">🎉 रिक्वेस्ट सफलतापूर्वक ले ली गई है!</h2>
-        <p><b>कैटेगरी:</b> {category}</p>
-        <p><b>चुनी गई भाषा/टोन:</b> {language}</p>
-        <p><b>आपका डायलॉग:</b> "{dialogue}"</p>
-        <p style="color: #fbbf24; margin-top: 20px;">आपकी वीडियो प्रोसेस हो रही है और बहुत जल्द लिप-सिंक के साथ तैयार हो जाएगी!</p>
-        <br>
-        <a href="/" style="background: #38bdf8; color: #0f172a; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;">वापस जाएं</a>
-    </div>
-    """
+    return render_template('index.html', user=user, history=user_histories[email], success=True, filename=filename)
+
+@app.route('/login')
+def login():
+    redirect_uri = url_for('authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/authorize')
+def authorize():
+    token = google.authorize_access_token()
+    resp = google.get('https://www.googleapis.com/oauth2/v2/userinfo')
+    user_info = resp.json()
+    session['user'] = user_info
+    return redirect(url_for('index'))
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('index'))
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-  
+    app.run(host='0.0.0.0', port=5000, debug=True)
+    
