@@ -3,93 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal AI Voiceover & Lip-Sync Studio</title>
+    <title>AI Voice & Video Studio</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 550px; margin: auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #334155; }
-        h2 { text-align: center; color: #38bdf8; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px; }
-        label { display: block; margin-top: 15px; font-weight: 600; color: #e2e8f0; font-size: 14px; }
-        select, input[type="file"], textarea { width: 100%; padding: 12px; margin-top: 6px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; font-size: 14px; }
-        select:focus, input:focus, textarea:focus { outline: none; border-color: #38bdf8; }
-        textarea { height: 110px; resize: vertical; }
-        button { width: 100%; margin-top: 25px; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #0ea5e9; }
-        #loading { text-align: center; margin-top: 15px; color: #fbbf24; font-weight: 500; display: none; }
-        .error-msg { color: #f87171; font-size: 13px; margin-top: 5px; display: none; }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22c55e;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background-color: var(--card-bg); width: 100%; max-width: 550px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); max-height: 95vh; overflow-y: auto; }
+        
+        /* लॉगिन स्क्रीन के लिए स्टाइल्स */
+        .login-box { text-align: center; padding: 20px 0; }
+        .google-btn { background: #fff; color: #333; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; width: 100%; margin-top: 20px; box-sizing: border-box; }
+        .google-btn:hover { background: #f1f5f9; }
+
+        /* डैशबोर्ड के लिए स्टाइल्स */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        .user-info { font-size: 0.85rem; color: var(--text-muted); }
+        .logout-btn { background-color: var(--danger); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; }
+        
+        h1 { font-size: 1.3rem; margin-bottom: 5px; color: #fff; }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #cbd5e1; }
+        textarea, input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background-color: #0f172a; color: white; font-size: 0.9rem; }
+        textarea { resize: vertical; height: 70px; }
+        button { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
+        button:hover { background-color: var(--primary-dark); }
+        
+        .result-box { margin-top: 20px; padding: 12px; background-color: #0f172a; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
+        .download-btn { display: inline-block; background-color: var(--accent); color: #0f172a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin-top: 8px; }
+        
+        .history-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
+        .history-section h3 { font-size: 1rem; margin-bottom: 12px; color: #38bdf8; }
+        .history-item { background-color: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--primary); }
+        .history-info { font-size: 0.8rem; max-width: 65%; }
+        .file-name { font-weight: bold; color: #fff; word-break: break-all; }
+        .file-time { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🎬 Voiceover & Lip-Sync Studio</h2>
-    <p class="subtitle">मूवी, एनिमी या के-ड्रामा पर अपनी पसंद का देसी/विदेशी वॉइसओवर और लिप-सिंक बनाएं!</p>
-    
-    <form id="voiceoverForm" action="/process" method="POST" enctype="multipart/form-data">
-        
-        <!-- 1. कैटेगरी सेलेक्शन -->
-        <label>1. क्लिप की कैटेगरी चुनें:</label>
-        <select name="category">
-            <option value="movie">🎬 मूवी क्लिप (Movie Clip)</option>
-            <option value="anime">⛩️ एनिमी क्लिप (Anime Clip)</option>
-            <option value="kdrama">🇰🇷 कोरियन ड्रामा (K-Drama Clip)</option>
-        </select>
+    <div class="container">
+        {% if not user %}
+            <!-- अगर यूजर लॉग इन नहीं है -->
+            <div class="login-box">
+                <h1>🎙️ AI Voice Studio</h1>
+                <p class="subtitle" style="margin-top: 8px;">जारी रखने के लिए अपने जीमेल से साइन इन करें</p>
+                <a href="/login" class="google-btn">🌐 Google से साइन इन करें</a>
+            </div>
+        {% else %}
+            <!-- अगर यूजर लॉग इन है (डैशबोर्ड) -->
+            <div class="header">
+                <div>
+                    <p class="user-info">👤 {{ user.email }}</p>
+                </div>
+                <a href="/logout" class="logout-btn">लॉग आउट</a>
+            </div>
 
-        <!-- 2. वीडियो अपलोड (5 मिनट लिमिट) -->
-        <label>2. वीडियो अपलोड करें (मैक्सिमम 5 मिनट):</label>
-        <input type="file" name="video" id="videoInput" accept="video/*" required>
-        <div id="durationError" class="error-msg">माफ कीजिए! वीडियो 5 मिनट से लंबी है। कृपया छोटी क्लिप अपलोड करें।</div>
+            <h1>🎙️ AI Voice & Video Studio</h1>
+            <p class="subtitle">टेक्स्ट दें, वीडियो अपलोड करें और क्रोम से डाउनलोड करें</p>
 
-        <!-- 3. भाषा और टोन -->
-        <label>3. वॉइसओवर की भाषा और टोन चुनें:</label>
-        <select name="language">
-            <option value="bhojpuri">भोजपुरी / बिहारी टोन (Bhojpuri / Bihari)</option>
-            <option value="hi">हिंदी (Hindi)</option>
-            <option value="nagpuri">नागपुरी (Nagpuri)</option>
-            <option value="en">इंग्लिश (English)</option>
-            <option value="zh">चीनी (Chinese)</option>
-            <option value="ta">तमिल (Tamil)</option>
-            <option value="te">तेलुगु (Telugu)</option>
-        </select>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="text_input">वॉयसओवर टेक्स्ट:</label>
+                    <textarea id="text_input" name="text_input" placeholder="यहाँ अपना टेक्स्ट लिखें..."></textarea>
+                </div>
 
-        <!-- 4. डायलॉग इनपुट -->
-        <label>4. अपना नया डायलॉग यहाँ लिखें:</label>
-        <textarea name="dialogue" placeholder="यहाँ अपना फनी, सीरियस या देसी डायलॉग टाइप करें..." required></textarea>
+                <div class="form-group">
+                    <label for="media_file">वीडियो या ऑडियो क्लिप चुनें:</label>
+                    <input type="file" id="media_file" name="media_file" accept="video/*,audio/*">
+                </div>
 
-        <button type="submit" id="submitBtn">वॉइसओवर और लिप-सिंक शुरू करें</button>
-        <div id="loading">प्रोसेसिंग हो रही है... वीडियो और ऑडियो मैच किए जा रहे हैं, कृपया प्रतीक्षा करें।</div>
-    </form>
-</div>
+                <button type="submit">प्रोसेस करें और अपलोड करें</button>
+            </form>
 
-<script>
-    const MAX_DURATION = 300; // 300 सेकंड = 5 मिनट
+            {% if success and filename %}
+            <div class="result-box">
+                <p style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">✨ वीडियो और वॉयसओवर तैयार हो गया है!</p>
+                <a href="{{ url_for('download_file', filename=filename) }}" class="download-btn">📥 क्रोम से डाउनलोड करें</a>
+            </div>
+            {% endif %}
 
-    document.getElementById('voiceoverForm').onsubmit = function(event) {
-        const videoInput = document.getElementById('videoInput');
-        const file = videoInput.files[0];
-        const errorDiv = document.getElementById('durationError');
-
-        if (file) {
-            event.preventDefault(); 
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-
-            video.onloadedmetadata = function() {
-                window.URL.revokeObjectURL(video.src);
-                if (video.duration > MAX_DURATION) {
-                    errorDiv.style.display = 'block';
-                    document.getElementById('loading').style.display = 'none';
-                } else {
-                    errorDiv.style.display = 'none';
-                    document.getElementById('loading').style.display = 'block';
-                    document.getElementById('submitBtn').disabled = true;
-                    document.getElementById('voiceoverForm').submit();
-                }
-            }
-            video.src = URL.createObjectURL(file);
-        }
-    };
-</script>
+            {% if history %}
+            <div class="history-section">
+                <h3>📜 आपकी अपलोड हिस्ट्री</h3>
+                {% for item in history %}
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="file-name">📁 {{ item.filename }}</div>
+                        <div class="file-time">🕒 {{ item.time }}</div>
+                    </div>
+                    <a href="{{ url_for('download_file', filename=item.filename) }}" class="download-btn" style="margin-top:0; padding:5px 10px; font-size:0.75rem;">📥 डाउनलोड</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
 
 </body>
 </html>
